@@ -1,45 +1,43 @@
 const express = require('express');
 const db = require('./db');
-const cors = require('cors')
+const cors = require('cors');
 const app = express();
-app.use(express.json());
 const port = 3000;
+
+app.use(express.json());
 
 app.use(cors({
   origin: '*'
-}))
+}));
 
-
-// Definir uma rota simples
 app.get('/', (req, res) => {
-    res.send('Hello, world!');
-  });
+  res.send('Hello, world!');
+});
+
+app.post('/inserir/usuario', (req, res) => {
+  const { nome, email, cpf, senha } = req.body;
+
+
+  if (!nome || !email || !cpf || !senha) {
+    return res.status(400).send('Nome, email, CPF e senha são obrigatórios');
+  }
+
   
-  // Configurar o servidor para rodar na porta 3000
-  const PORT = 3000;
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-  });
+  db.query(
+    'INSERT INTO usuario (nome, email, cpf, senha) VALUES (?, ?, ?, ?)', 
+    (err, results, fields) => {
+      if (err) {
+        console.error('Erro na inserção:', err);
+        return res.status(500).send('Erro ao inserir no banco de dados');
+      }
+      console.log('Usuário inserido:', results);
 
-
-app.post('/inserir/cliente', (req, res) => {
-    const { nome, email, cpf} = req.body;
-   
-    db.query(
-        `INSERT INTO cliente (nome, email, cpf) VALUES (?, ?, ?)`,
-        [nome, email, cpf],
-        function (err, results, fields) {
-          if (err) {
-            console.error('Erro na inserção:', err);
-            return;
-          }
-          console.log(results);
-          console.log(fields);
-        }
-      );
-    res.send(`cliente inserido!\n\nnome: ${nome} \nemail: ${email} \ncpf: ${cpf}`);
+      res.status(200).send(`Usuário inserido com sucesso!\n\nNome: ${nome}\nEmail: ${email}\nCPF: ${cpf}\nSenha: ${senha}`);
+    }
+  );
 });
 
 app.listen(port, () => {
-    console.log("rodsando")
-})
+  console.log(`Servidor rodando na porta ${port}`);
+});
+
