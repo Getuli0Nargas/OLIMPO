@@ -95,6 +95,21 @@ app.put('/atualizar/usuario/:id', (req, res) => {
   });
 
 
+  app.get('/puxar/usuario/:id', (req, res) => {
+    const {id}=req.params;
+    db.query(
+        `SELECT * FROM usuario WHERE id = ?`,
+        [id],
+        function(err,results,fields){
+            if(err){
+                console.error('erro para puxar',err);
+                return res.status(500).json({error:'Erro para puxar'})
+            }
+            return res.json(results)
+        }
+    )
+});
+
 
 
 
