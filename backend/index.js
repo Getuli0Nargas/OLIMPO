@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('./db');
 const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = 3005;
 
   app.use(express.json());
 
@@ -113,3 +113,34 @@ app.put('/atualizar/usuario/:id', (req, res) => {
 
 
 
+/*----------------FUNCIONARIO---------------------------------**/
+
+
+app.post('/inserir/funcionario', (req, res) => {
+  const { nome, email, cpf, senha } = req.body;
+
+
+  if (!nome || !email || !cpf || !senha) {
+    return res.status(400).send('Nome, email, CPF e senha são obrigatórios');
+  }
+
+  
+  db.query(
+    'INSERT INTO funcionario (nome, email, cpf, senha) VALUES (?, ?, ?, ?)', 
+    [nome, email, cpf, senha], 
+    (err, results, fields) => {
+      if (err) {
+        console.error('Erro na inserção:', err);
+        return res.status(500).send('Erro ao inserir no banco de dados');
+      }
+      console.log('funcionario inserido:', results);
+
+      res.status(200).send(`funcionario inserido com sucesso!\n\nNome: ${nome}\nEmail: ${email}\nCPF: ${cpf}\nSenha: ${senha}`);
+    }
+  );
+});
+
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});
