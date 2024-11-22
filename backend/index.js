@@ -2,7 +2,12 @@ const express = require('express');
 const db = require('./db');
 const cors = require('cors');
 const app = express();
-const port = 3005;
+const port = 3000;
+
+
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});
 
   app.use(express.json());
 
@@ -89,12 +94,6 @@ app.put('/atualizar/usuario/:id', (req, res) => {
     );
   });
 
-
-  app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}`);
-  });
-
-
   app.get('/puxar/usuario/:id', (req, res) => {
     const {id}=req.params;
     db.query(
@@ -114,7 +113,7 @@ app.put('/atualizar/usuario/:id', (req, res) => {
 
 
 /*----------------FUNCIONARIO---------------------------------**/
-
+/*cadastrar funcionario**/
 
 app.post('/inserir/funcionario', (req, res) => {
   const { nome, email, cpf, senha } = req.body;
@@ -141,6 +140,68 @@ app.post('/inserir/funcionario', (req, res) => {
 });
 
 
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
+/*atualizar funcionario**/
+
+app.put('/atualizar/funcionario/:id', (req, res) => {
+  const { nome, email, cpf, senha } = req.body;  
+  const { id } = req.params;  
+
+  
+  if (!nome || !email || !cpf || !senha) {
+      return res.status(400).json({ error: 'Todos os campos (nome, email, cpf, senha) são obrigatórios' });
+  }
+
+  
+  db.query(
+      `UPDATE funcionario SET nome = ?, email = ?, cpf = ?, senha = ? WHERE id = ?`,  
+      [nome, email, cpf, senha, id],  
+      function (err, results) {
+          if (err) {
+              console.error('Erro na consulta:', err);
+              return res.status(500).json({ error: 'Erro ao atualizar o funcionario' });
+          }
+
+        
+          if (results.affectedRows === 0) {
+              return res.status(404).json({ error: 'Usuário não encontrado' });
+          }
+
+          res.send(`funcionario ${id} atualizado com sucesso!\nNome: ${nome}\nEmail: ${email}\nCPF: ${cpf}\nSenha: ${senha}`);
+      }
+  );
+});
+
+
+/*deletar funcionario**/
+
+app.delete('/deletar/funcionario/:id', (req, res) => {
+  const { id } = req.params; 
+  db.query(
+    `DELETE FROM funcionario WHERE id = (?)`,
+    [id],
+    (err, results) => {
+      if (err) {
+        console.error('Erro para deletar', err);
+        return res.status(500).json({ error: 'Erro para deletar' });
+      }
+      return res.json(results);
+    }
+  );
+  });
+
+  /*puxar funcionario**/
+
+  app.get('/puxar/funcionario/:id', (req, res) => {
+    const {id}=req.params;
+    db.query(
+        `SELECT * FROM funcionario WHERE id = ?`,
+        [id],
+        function(err,results,fields){
+            if(err){
+                console.error('erro para puxar',err);
+                return res.status(500).json({error:'Erro para puxar'})
+            }
+            return res.json(results)
+        }
+    )
 });
